@@ -2,24 +2,67 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import api from "../utils/api";
 
 const schema = yup.object().shape({
   title: yup.string().required("Title is required"),
-  description: yup.string().min(10).required("Description is too short"),
+  description: yup.string().required("Description is required"),
   dueDate: yup.date().required("Due date is required"),
   priority: yup.string().required("Priority is required"),
 });
 
 const CreateTask = () => {
+  const [files, setFiles] = useState([]);
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({ resolver: yupResolver(schema) });
 
-  const onSubmit = (data) => {
-    console.log("Create task:", data);
-    // TODO: Send task to backend API
+  // Handle file selection (only PDFs, max 3)
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+
+    const validFiles = selectedFiles.filter(
+      (file) => file.type === "application/pdf"
+    );
+
+    if (validFiles.length > 3) {
+      toast.error("You can only upload up to 3 PDF files.");
+      return;
+    }
+
+    setFiles(validFiles);
+  };
+
+  const onSubmit = async (data) => {
+    const formData = new FormData();
+
+    formData.append("title", data.title);
+    formData.append("description", data.description);
+    formData.append("dueDate", data.dueDate);
+    formData.append("priority", data.priority);
+
+    files.forEach((file, i) => {
+      formData.append("documents", file);
+    });
+
+    try {
+      const res = await api.post("/tasks", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast.success("Task created successfully!");
+      console.log("Uploaded:", res.data);
+    } catch (err) {
+      toast.error("Task creation failed");
+      console.error(err);
+    }
   };
 
   return (
@@ -56,11 +99,28 @@ const CreateTask = () => {
         </select>
         <p className="text-red-500 text-sm">{errors.priority?.message}</p>
 
+        <div>
+          <label className="block text-sm font-medium mb-1">Upload PDFs (max 3)</label>
+          <input
+            type="file"
+            multiple
+            accept="application/pdf"
+            onChange={handleFileChange}
+            className="w-full"
+          />
+          <div className="mt-2 text-sm text-gray-700">
+            {files.map((file, index) => (
+              <p key={index}>📄 {file.name}</p>
+            ))}
+          </div>
+        </div>
+
         <button
           type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+          disabled={isSubmitting}
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
         >
-          Create Task
+          {isSubmitting ? "Creating..." : "Create Task"}
         </button>
       </form>
     </div>
