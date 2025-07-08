@@ -4,6 +4,7 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import CreateTask from '../pages/CreateTask';
+import TaskDetails from '../pages/TaskDetails';
 
 const AppRoutes = () => (
   <BrowserRouter>
@@ -14,6 +15,7 @@ const AppRoutes = () => (
         <Route path="register" element={<Register />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="dashboard/create" element={<CreateTask />} />
+        <Route path="dashboard/tasks/:id" element={<TaskDetails />} />
       </Route>
     </Routes>
   </BrowserRouter>
