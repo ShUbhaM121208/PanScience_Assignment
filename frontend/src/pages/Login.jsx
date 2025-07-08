@@ -15,7 +15,7 @@ const Login = () => {
     console.log("Logging in with:", form);
     // TODO: Integrate with backend API
     navigate("/dashboard");
-  };
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
