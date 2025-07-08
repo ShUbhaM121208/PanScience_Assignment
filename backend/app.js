@@ -5,7 +5,8 @@ const morgan = require('morgan');
 const path = require('path');
 
 const authRoutes = require('./routes/authRoutes');
-const taskRoutes = require('./routes/taskRoutes'); // ✅ Import task routes
+const taskRoutes = require('./routes/taskRoutes');
+const fileRoutes = require('./routes/fileRoutes'); // ✅ Import file routes
 
 const app = express();
 
@@ -19,7 +20,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Mount routes
 app.use('/api/auth', authRoutes);
-app.use('/api/tasks', taskRoutes); // ✅ Mount task routes
+app.use('/api/tasks', taskRoutes);
+app.use('/api/files', fileRoutes); // ✅ Mount file upload routes
 
 // Test route
 app.get('/', (req, res) => {
