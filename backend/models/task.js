@@ -1,9 +1,31 @@
-module.exports = (sequelize, DataTypes) => {
-  return sequelize.define("Task", {
-    title: { type: DataTypes.STRING, allowNull: false },
-    description: { type: DataTypes.TEXT },
-    status: { type: DataTypes.ENUM("pending", "in progress", "completed"), defaultValue: "pending" },
-    priority: { type: DataTypes.ENUM("low", "medium", "high"), defaultValue: "medium" },
-    due_date: { type: DataTypes.DATEONLY },
-  });
-};
+// models/task.js
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/db');
+const User = require('./user');
+
+const Task = sequelize.define('Task', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  description: DataTypes.TEXT,
+  status: {
+    type: DataTypes.STRING,
+    defaultValue: 'pending',
+  },
+  priority: {
+    type: DataTypes.STRING,
+    defaultValue: 'normal',
+  },
+  dueDate: DataTypes.DATE,
+});
+
+Task.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Task, { foreignKey: 'userId' });
+
+module.exports = Task;

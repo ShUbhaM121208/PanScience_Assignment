@@ -1,19 +1,28 @@
-// const app = require("./app");
-// const http = require("http");
-// const { sequelize } = require("./models");
-// const dotenv = require("dotenv");
-// dotenv.config();
+// server.js
+const express = require('express');
+const dotenv = require('dotenv');
+const sequelize = require('./config/db');
+const { User, Task, File } = require('./models');
 
-// const server = http.createServer(app);
-// const PORT = process.env.PORT || 5000;
+dotenv.config();
 
-// (async () => {
-//   try {
-//     await sequelize.sync();
-//     server.listen(PORT, () => {
-//       console.log(`Server running on port ${PORT}`);
-//     });
-//   } catch (error) {
-//     console.error("Failed to start server:", error);
-//   }
-// })();
+const app = express();
+app.use(express.json());
+
+const PORT = process.env.PORT || 5000;
+
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('✅ Database connected');
+
+    await sequelize.sync({ alter: true }); // use { force: true } to drop tables and recreate
+    console.log('✅ Tables synced');
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('❌ Failed to connect to DB:', err);
+  }
+})();
