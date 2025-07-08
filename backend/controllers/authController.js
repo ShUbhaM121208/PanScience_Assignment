@@ -10,7 +10,7 @@ const generateToken = (user) => {
 };
 
 exports.register = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, role } = req.body;
 
   try {
     const existingUser = await User.findOne({ where: { email } });
@@ -23,6 +23,7 @@ exports.register = async (req, res) => {
       username,
       email,
       password: hashedPassword,
+      role: role || 'user', // fallback to 'user' if not provided
     });
 
     const token = generateToken(user);
@@ -32,6 +33,7 @@ exports.register = async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
+        role: user.role,
       },
       token,
     });
@@ -60,6 +62,7 @@ exports.login = async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
+        role: user.role,
       },
       token,
     });
