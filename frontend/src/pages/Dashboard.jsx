@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TaskCard from "../components/TaskCard";
 import api from "../utils/api";
-import { socket } from "../sockets/socket";
+import { socket } from '../sockets/soket';
 import { toast } from "react-toastify";
 
 const Dashboard = () => {

@@ -4,7 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import api from '../utilis/api';
+import api from '../utils/api';
 
 const schema = yup.object().shape({
   title: yup.string().required("Title is required"),
