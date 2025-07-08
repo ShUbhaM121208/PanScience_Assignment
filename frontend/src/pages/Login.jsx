@@ -1,62 +1,62 @@
-// src/pages/Login.jsx
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
 
+const loginSchema = yup.object().shape({
+  email: yup.string().email("Invalid email").required("Email is required"),
+  password: yup.string().min(6).required("Password is required"),
+});
+
 const Login = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
 
-  const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(loginSchema),
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("Logging in with:", form);
-    // TODO: Integrate with backend API
+  const onSubmit = (data) => {
+    dispatch(loginSuccess({ email: data.email, token: "fake-token" }));
     navigate("/dashboard");
-  }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         className="bg-white p-6 rounded-lg shadow-md w-full max-w-md space-y-4"
       >
         <h2 className="text-2xl font-bold text-center">Login</h2>
+
         <input
           type="email"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
+          {...register("email")}
           placeholder="Email"
-          className="w-full px-3 py-2 border rounded-md focus:outline-none"
-          required
+          className="w-full px-3 py-2 border rounded-md"
         />
+        <p className="text-red-500 text-sm">{errors.email?.message}</p>
+
         <input
           type="password"
-          name="password"
-          value={form.password}
-          onChange={handleChange}
+          {...register("password")}
           placeholder="Password"
-          className="w-full px-3 py-2 border rounded-md focus:outline-none"
-          required
+          className="w-full px-3 py-2 border rounded-md"
         />
+        <p className="text-red-500 text-sm">{errors.password?.message}</p>
+
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+          className="w-full bg-blue-600 text-white py-2 rounded-md"
         >
           Login
         </button>
-        <p className="text-center text-sm">
-          Don't have an account?{" "}
-          <span
-            className="text-blue-600 cursor-pointer"
-            onClick={() => navigate("/register")}
-          >
-            Register
-          </span>
-        </p>
       </form>
     </div>
   );
