@@ -45,17 +45,22 @@ const TaskDetails = () => {
 
           {task.documents.map((doc, index) => (
             <div key={index} className="border rounded overflow-hidden shadow">
-              <div className="bg-gray-100 px-4 py-2 text-sm font-medium">
-                {doc.name || `Document ${index + 1}`}
+              <div className="bg-gray-100 px-4 py-2 flex justify-between items-center text-sm font-medium">
+                <span>{doc.name || `Document ${index + 1}`}</span>
+                <a
+                  href={doc.url}
+                  download
+                  className="text-blue-600 hover:underline"
+                >
+                  Download PDF
+                </a>
               </div>
+
               <embed
                 src={doc.url}
                 type="application/pdf"
                 className="w-full h-96"
               />
-              {/* Alternatively: 
-                <iframe src={doc.url} className="w-full h-96" title={`PDF-${index}`}></iframe> 
-              */}
             </div>
           ))}
         </div>
