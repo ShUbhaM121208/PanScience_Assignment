@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    container_name: panscience_backend
+    restart: always
+    ports:
+      - "5003:5003"
+    environment:
+      - MONGO_URI=your_mongodb_atlas_connection_string
+      - JWT_SECRET=your_jwt_secret
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  frontend:
+    build: ./frontend
+    container_name: panscience_frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
