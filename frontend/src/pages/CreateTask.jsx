@@ -5,6 +5,7 @@ import * as yup from "yup";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import api from '../utils/api';
+import { useNavigate } from "react-router-dom";
 
 const schema = yup.object().shape({
   title: yup.string().required("Title is required"),
@@ -15,6 +16,7 @@ const schema = yup.object().shape({
 
 const CreateTask = () => {
   const [files, setFiles] = useState([]);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -43,22 +45,26 @@ const CreateTask = () => {
 
     formData.append("title", data.title);
     formData.append("description", data.description);
-    formData.append("dueDate", data.dueDate);
+    // Ensure dueDate is in ISO format (YYYY-MM-DD)
+    formData.append("dueDate", new Date(data.dueDate).toISOString());
     formData.append("priority", data.priority);
 
-    files.forEach((file, i) => {
-      formData.append("documents", file);
+    files.forEach((file) => {
+      formData.append("documents", file); // 'documents' matches multer field name
     });
 
     try {
       const res = await api.post("/tasks", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
+          // If your api instance does NOT auto-attach the token, add:
+          // Authorization: `Bearer ${yourToken}`,
         },
       });
 
       toast.success("Task created successfully!");
       console.log("Uploaded:", res.data);
+      navigate("/dashboard");
     } catch (err) {
       toast.error("Task creation failed");
       console.error(err);

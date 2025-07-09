@@ -5,7 +5,7 @@ const { User } = require('../models');
 
 // Helper: Generate JWT token
 const generateToken = (user) => {
-  return jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: '7d',
   });
 };
@@ -13,18 +13,18 @@ const generateToken = (user) => {
 // ================== REGISTER ===================
 exports.register = async (req, res) => {
   try {
-    const { username, email, password, role } = req.body;
+    const { name, email, password, role } = req.body;
 
     // Input validation
-    if (!username || !email || !password) {
+    if (!name || !email || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     // Trim input to avoid trailing spaces
     const cleanEmail = email.trim().toLowerCase();
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ where: { email: cleanEmail } });
+    // Check if user already exists (Mongoose syntax)
+    const existingUser = await User.findOne({ email: cleanEmail });
     if (existingUser) {
       return res.status(409).json({ message: 'Email already registered' });
     }
@@ -32,12 +32,15 @@ exports.register = async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Set role: 'user' by default, or allow 'admin' if provided
+    const userRole = role && role === 'admin' ? 'admin' : 'user';
+
     // Create user
     const user = await User.create({
-      username: username.trim(),
+      name: name.trim(),
       email: cleanEmail,
       password: hashedPassword,
-      role: role || 'user', // fallback to 'user' role
+      role: userRole,
     });
 
     // Generate token
@@ -45,8 +48,8 @@ exports.register = async (req, res) => {
 
     return res.status(201).json({
       user: {
-        id: user.id,
-        username: user.username,
+        id: user._id,
+        name: user.name,
         email: user.email,
         role: user.role,
       },
@@ -59,6 +62,7 @@ exports.register = async (req, res) => {
 };
 
 // ================== LOGIN ===================
+
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -70,8 +74,8 @@ exports.login = async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // Find user
-    const user = await User.findOne({ where: { email: cleanEmail } });
+    // Find user (Mongoose syntax)
+    const user = await User.findOne({ email: cleanEmail });
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -87,8 +91,8 @@ exports.login = async (req, res) => {
 
     return res.status(200).json({
       user: {
-        id: user.id,
-        username: user.username,
+        id: user._id,
+        name: user.name,
         email: user.email,
         role: user.role,
       },

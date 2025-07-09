@@ -14,7 +14,7 @@ const Dashboard = () => {
   const fetchTasks = async () => {
     try {
       const res = await api.get("/tasks");
-      setTasks(res.data);
+      setTasks(res.data.tasks || []); // <-- Use .tasks from backend response
     } catch (err) {
       toast.error("Failed to fetch tasks");
     }
@@ -45,6 +45,7 @@ const Dashboard = () => {
       socket.off("task_created");
       socket.off("task_updated");
     };
+    // eslint-disable-next-line
   }, []);
 
   return (
@@ -60,7 +61,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-        {tasks.map((task) => (
+        {Array.isArray(tasks) && tasks.map((task) => (
           <TaskCard key={task._id} task={task} />
         ))}
       </div>
