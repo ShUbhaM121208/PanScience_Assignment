@@ -1,4 +1,7 @@
 // controllers/fileController.js
+const { File } = require("../models");
+
+// Upload files
 exports.uploadFiles = (req, res) => {
   try {
     const files = req.files;
@@ -17,5 +20,15 @@ exports.uploadFiles = (req, res) => {
     res.status(200).json({ files: fileInfo });
   } catch (error) {
     res.status(500).json({ message: 'File upload failed', error: error.message });
+  }
+};
+
+// Get files by task ID
+exports.getFilesByTask = async (req, res) => {
+  try {
+    const files = await File.find({ taskId: req.params.taskId });
+    res.json(files);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch files' });
   }
 };

@@ -2,6 +2,9 @@
 const jwt = require("jsonwebtoken");
 const { User } = require("../models");
 
+/**
+ * Middleware to authenticate user via JWT and attach user info to req.user
+ */
 const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -12,12 +15,19 @@ const authMiddleware = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await User.findByPk(decoded.id);
+    // Use Mongoose to find user by _id
+    const user = await User.findById(decoded.id);
     if (!user) {
       return res.status(401).json({ message: "Invalid token" });
     }
 
-    req.user = { id: user.id, role: user.role };
+    // Attach full user info for downstream role checks
+    req.user = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
     next();
   } catch (err) {
     return res.status(401).json({ message: "Authentication failed" });
