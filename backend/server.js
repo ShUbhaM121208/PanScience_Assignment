@@ -4,8 +4,7 @@ const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
 
-const sequelize = require("./config/db");
-const { User, Task, File } = require("./models");
+const connectDB = require("./config/db"); // <-- Use your MongoDB connection
 const app = require("./app");
 
 dotenv.config();
@@ -39,11 +38,7 @@ io.on("connection", (socket) => {
 
 (async () => {
   try {
-    await sequelize.authenticate();
-    console.log("✅ Database connected");
-
-    await sequelize.sync({ alter: true });
-    console.log("✅ Tables synced");
+    await connectDB(); // <-- Connect to MongoDB
 
     // 🚀 Start the server with WebSocket support
     server.listen(PORT, () => {

@@ -1,10 +1,13 @@
 // src/features/auth/authSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
-const token = localStorage.getItem('token');
+// Try to get the user object from localStorage
+const user = localStorage.getItem('user')
+  ? JSON.parse(localStorage.getItem('user'))
+  : null;
 
 const initialState = {
-  user: token ? { email: 'demo@user.com', token } : null,
+  user, // user is either the parsed object or null
 };
 
 const authSlice = createSlice({
@@ -13,11 +16,11 @@ const authSlice = createSlice({
   reducers: {
     loginSuccess: (state, action) => {
       state.user = action.payload;
-      localStorage.setItem('token', action.payload.token);
+      localStorage.setItem('user', JSON.stringify(action.payload));
     },
     logout: (state) => {
       state.user = null;
-      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     },
   },
 });

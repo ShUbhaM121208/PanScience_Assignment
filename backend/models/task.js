@@ -1,31 +1,13 @@
 // models/task.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
-const User = require('./user');
+const mongoose = require('mongoose');
 
-const Task = sequelize.define('Task', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
-  title: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  description: DataTypes.TEXT,
-  status: {
-    type: DataTypes.STRING,
-    defaultValue: 'pending',
-  },
-  priority: {
-    type: DataTypes.STRING,
-    defaultValue: 'normal',
-  },
-  dueDate: DataTypes.DATE,
-});
+const taskSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  status: { type: String, default: 'pending' },
+  priority: { type: String, default: 'normal' },
+  dueDate: { type: Date },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User
+}, { timestamps: true });
 
-Task.belongsTo(User, { foreignKey: 'userId' });
-User.hasMany(Task, { foreignKey: 'userId' });
-
-module.exports = Task;
+module.exports = mongoose.model('Task', taskSchema);

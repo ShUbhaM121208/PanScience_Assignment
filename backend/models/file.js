@@ -1,22 +1,10 @@
 // models/file.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
-const Task = require('./task');
+const mongoose = require('mongoose');
 
-const File = sequelize.define('File', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
-  name: DataTypes.STRING,
-  url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-});
+const fileSchema = new mongoose.Schema({
+  name: { type: String },
+  url: { type: String, required: true },
+  taskId: { type: mongoose.Schema.Types.ObjectId, ref: 'Task' }, // Reference to Task
+}, { timestamps: true });
 
-File.belongsTo(Task, { foreignKey: 'taskId' });
-Task.hasMany(File, { foreignKey: 'taskId' });
-
-module.exports = File;
+module.exports = mongoose.model('File', fileSchema);
