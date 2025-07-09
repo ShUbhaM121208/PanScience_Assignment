@@ -2,9 +2,13 @@
 const mongoose = require('mongoose');
 
 const fileSchema = new mongoose.Schema({
-  name: { type: String },
-  url: { type: String, required: true },
-  taskId: { type: mongoose.Schema.Types.ObjectId, ref: 'Task' }, // Reference to Task
-}, { timestamps: true });
+  name: String,
+  url: String, // S3 URL
+  mimetype: String,
+  size: Number,
+  taskId: { type: mongoose.Schema.Types.ObjectId, ref: 'Task' },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  uploadedAt: { type: Date, default: Date.now }
+});
 
 module.exports = mongoose.model('File', fileSchema);

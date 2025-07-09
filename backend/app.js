@@ -26,9 +26,6 @@ app.use(express.urlencoded({ extended: true }));
 // Logger
 app.use(morgan('dev'));
 
-// Serve static files (e.g., PDFs) from /uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 // ===== API Routes =====
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
