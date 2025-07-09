@@ -1,9 +1,13 @@
+// src/pages/Login.jsx
+
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api"; // ✅ Axios instance
+import { toast } from "react-toastify";
 
 const loginSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -22,9 +26,25 @@ const Login = () => {
     resolver: yupResolver(loginSchema),
   });
 
-  const onSubmit = (data) => {
-    dispatch(loginSuccess({ email: data.email, token: "fake-token" }));
-    navigate("/dashboard");
+  const onSubmit = async (data) => {
+    try {
+      const res = await api.post("/auth/login", data);
+      const { token, user } = res.data;
+
+      // ✅ Store token
+      localStorage.setItem("token", token);
+
+      // ✅ Update Redux state
+      dispatch(loginSuccess({ email: user.email, token }));
+
+      toast.success("Login successful!");
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err.response?.data?.message || "Login failed. Check your credentials."
+      );
+    }
   };
 
   return (

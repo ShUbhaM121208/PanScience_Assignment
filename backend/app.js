@@ -1,4 +1,3 @@
-// app.js
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -10,18 +9,23 @@ const fileRoutes = require('./routes/fileRoutes'); // ✅ Import file routes
 
 const app = express();
 
+// ✅ CORS configuration for frontend access
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
+
 // Middleware
-app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Static file serving (for uploaded PDFs)
+// ✅ Serve static files (e.g., PDFs) from /uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Mount routes
+// ✅ Mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
-app.use('/api/files', fileRoutes); // ✅ Mount file upload routes
+app.use('/api/files', fileRoutes);
 
 // Test route
 app.get('/', (req, res) => {

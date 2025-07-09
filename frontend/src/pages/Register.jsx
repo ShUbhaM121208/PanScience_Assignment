@@ -2,10 +2,12 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api"; // ✅ Axios instance
 
 const registerSchema = yup.object().shape({
-  email: yup.string().email("Invalid email").required(),
-  password: yup.string().min(6).required(),
+  username: yup.string().required("Username is required"), // ✅ add this
+  email: yup.string().email("Invalid email").required("Email is required"),
+  password: yup.string().min(6, "Password must be at least 6 characters").required(),
   confirmPassword: yup
     .string()
     .oneOf([yup.ref("password")], "Passwords must match")
@@ -23,9 +25,23 @@ const Register = () => {
     resolver: yupResolver(registerSchema),
   });
 
-  const onSubmit = (data) => {
-    console.log("Registering:", data);
-    navigate("/login");
+  const onSubmit = async (data) => {
+    try {
+      const { username, email, password } = data;
+
+      const res = await api.post("/auth/register", {
+        username,
+        email,
+        password,
+      });
+
+      console.log("✅ Registered:", res.data);
+      alert("Registration successful! Please login.");
+      navigate("/login");
+    } catch (err) {
+      console.error("❌ Register error:", err.response?.data);
+      alert(err.response?.data?.message || "Registration failed.");
+    }
   };
 
   return (
@@ -35,6 +51,14 @@ const Register = () => {
         className="bg-white p-6 rounded-lg shadow-md w-full max-w-md space-y-4"
       >
         <h2 className="text-2xl font-bold text-center">Register</h2>
+
+        <input
+          type="text"
+          {...register("username")}
+          placeholder="Username"
+          className="w-full px-3 py-2 border rounded-md"
+        />
+        <p className="text-red-500 text-sm">{errors.username?.message}</p>
 
         <input
           type="email"
