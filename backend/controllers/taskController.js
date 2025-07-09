@@ -1,5 +1,6 @@
 // controllers/taskController.js
 const { Task, File } = require("../models");
+const mongoose = require("mongoose");
 
 // ✅ For regular users: Get only their own tasks
 exports.getTasks = async (req, res) => {
@@ -7,7 +8,7 @@ exports.getTasks = async (req, res) => {
     const { status, priority, dueDate, page = 1, limit = 10 } = req.query;
 
     const filters = {
-      userId: req.user.id, // Mongoose: userId is ObjectId
+      userId: new mongoose.Types.ObjectId(req.user.id), // Convert string to ObjectId
     };
 
     if (status) filters.status = status;
@@ -42,6 +43,62 @@ exports.getAllTasks = async (req, res) => {
   }
 };
 
+// ✅ Get a single task by ID
+exports.getTaskById = async (req, res) => {
+  try {
+    console.log("🔍 getTaskById called:", {
+      taskId: req.params.id,
+      userId: req.user.id,
+      userRole: req.user.role
+    });
+
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      console.log("❌ Task not found:", req.params.id);
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    console.log("🔍 Task found:", {
+      taskId: task._id,
+      taskUserId: task.userId,
+      taskUserIdType: typeof task.userId,
+      currentUserId: req.user.id,
+      currentUserIdType: typeof req.user.id,
+      userRole: req.user.role
+    });
+
+    // Only admin or owner can view
+    const taskUserId = task.userId.toString();
+    const currentUserId = req.user.id;
+    
+    console.log("🔍 User ID Comparison:", {
+      taskUserId,
+      currentUserId,
+      areEqual: taskUserId === currentUserId,
+      userIsAdmin: req.user.role === "admin"
+    });
+    
+    if (req.user.role !== "admin" && taskUserId !== currentUserId) {
+      console.log("❌ Access denied - User not authorized");
+      return res.status(403).json({ 
+        message: "Forbidden - You can only view your own tasks",
+        debug: {
+          taskUserId,
+          currentUserId,
+          userRole: req.user.role
+        }
+      });
+    }
+
+    console.log("✅ Access granted - Task returned successfully");
+    res.json(task);
+  } catch (err) {
+    console.error("❌ Error fetching task:", err);
+    res.status(500).json({ message: "Failed to fetch task" });
+  }
+};
+
 // ✅ Create a new task (JSON only)
 exports.createTask = async (req, res) => {
   try {
@@ -57,7 +114,7 @@ exports.createTask = async (req, res) => {
       description,
       priority,
       dueDate,
-      userId: req.user.id, // Mongoose: userId is ObjectId
+      userId: new mongoose.Types.ObjectId(req.user.id), // Convert string to ObjectId
     });
 
     res.status(201).json(task);
@@ -83,7 +140,7 @@ exports.createTaskWithFiles = async (req, res) => {
       description,
       priority,
       dueDate,
-      userId: req.user.id,
+      userId: new mongoose.Types.ObjectId(req.user.id), // Convert string to ObjectId
     });
 
     // 2. Handle file uploads (if any)
@@ -95,7 +152,7 @@ exports.createTaskWithFiles = async (req, res) => {
             name: file.originalname,
             url: `/uploads/${file.filename}`,
             taskId: task._id,
-            userId: req.user.id,
+            userId: new mongoose.Types.ObjectId(req.user.id), // Convert string to ObjectId
           });
           return savedFile;
         })
@@ -120,7 +177,7 @@ exports.updateTask = async (req, res) => {
 
     // Only admin or owner can update
     if (req.user.role !== "admin" && task.userId.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden - You can only update your own tasks" });
     }
 
     Object.assign(task, req.body);
@@ -143,7 +200,7 @@ exports.deleteTask = async (req, res) => {
 
     // Only admin or owner can delete
     if (req.user.role !== "admin" && task.userId.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "Forbidden - You can only delete your own tasks" });
     }
 
     await task.deleteOne();

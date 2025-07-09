@@ -13,6 +13,7 @@ router.use(authMiddleware);
 // Routes
 router.get("/", taskController.getTasks); // for logged-in user
 router.get("/all", roleMiddleware("admin"), taskController.getAllTasks); // for admin
+router.get("/:id", taskController.getTaskById); // get single task by ID
 
 // Use multer for file uploads on task creation
 router.post("/", multerConfig.array('documents', 3), taskController.createTaskWithFiles);
