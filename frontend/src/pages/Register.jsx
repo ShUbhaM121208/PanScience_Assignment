@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../utils/api"; // ✅ Axios instance
 
 const registerSchema = yup.object().shape({
-  username: yup.string().required("Username is required"), // ✅ add this
+  name: yup.string().required("Name is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
   password: yup.string().min(6, "Password must be at least 6 characters").required(),
   confirmPassword: yup
@@ -27,10 +27,10 @@ const Register = () => {
 
   const onSubmit = async (data) => {
     try {
-      const { username, email, password } = data;
+      const { name, email, password } = data;
 
       const res = await api.post("/auth/register", {
-        username,
+        name,
         email,
         password,
       });
@@ -54,11 +54,11 @@ const Register = () => {
 
         <input
           type="text"
-          {...register("username")}
-          placeholder="Username"
+          {...register("name")}
+          placeholder="Name"
           className="w-full px-3 py-2 border rounded-md"
         />
-        <p className="text-red-500 text-sm">{errors.username?.message}</p>
+        <p className="text-red-500 text-sm">{errors.name?.message}</p>
 
         <input
           type="email"

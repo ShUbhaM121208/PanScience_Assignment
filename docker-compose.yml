@@ -1,26 +1,75 @@
 version: '3.8'
+
 services:
+  mongodb:
+    image: mongo:6
+    container_name: panscience_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=taskmanager
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - app-network
+
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: panscience_backend
-    restart: always
+    restart: unless-stopped
     ports:
       - "5003:5003"
     environment:
-      - MONGO_URI=your_mongodb_atlas_connection_string
-      - JWT_SECRET=your_jwt_secret
-      - AWS_REGION=your_aws_region
-      - AWS_ACCESS_KEY_ID=your_aws_access_key_id
-      - AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-      - AWS_BUCKET_NAME=your_s3_bucket_name
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongodb:27017/taskmanager
+      - JWT_SECRET=your_super_secret_jwt_key_here_change_in_production
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=dummy_key
+      - AWS_SECRET_ACCESS_KEY=dummy_secret
+      - AWS_BUCKET_NAME=dummy_bucket
+      - PORT=5003
     volumes:
       - ./backend/uploads:/app/uploads
+    depends_on:
+      - mongodb
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5003/', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - app-network
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: dockerfile
     container_name: panscience_frontend
-    restart: always
+    restart: unless-stopped
     ports:
       - "5173:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  uploads:
+    driver: local
